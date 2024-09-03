@@ -111,7 +111,7 @@ func SendExtranonce(ctx *StratumContext) {
 	}
 }
 
-var walletRegex = regexp.MustCompile("karlsen:[a-z0-9]+")
+var walletRegex = regexp.MustCompile("karlsentest:[a-z0-9]+")
 
 //var walletRegex = regexp.MustCompile("karlsentest:[a-z0-9]+")
 
@@ -120,8 +120,8 @@ func CleanWallet(in string) (string, error) {
 	if err == nil {
 		return in, nil // good to go
 	}
-	if !strings.HasPrefix(in, "karlsen:") {
-		return CleanWallet("karlsen:" + in)
+	if !strings.HasPrefix(in, "karlsentest:") {
+		return CleanWallet("karlsentest:" + in)
 	}
 	//if !strings.HasPrefix(in, "karlsentest:") {
 	//	return CleanWallet("karlsentest:" + in)
@@ -129,8 +129,8 @@ func CleanWallet(in string) (string, error) {
 
 	// has karlsen: prefix but other weirdness somewhere
 	if walletRegex.MatchString(in) {
-		return in[0:69], nil
-		//return in[0:73], nil
+		//return in[0:69], nil
+		return in[0:73], nil
 	}
 	return "", errors.New("unable to coerce wallet to valid karlsen address")
 }
