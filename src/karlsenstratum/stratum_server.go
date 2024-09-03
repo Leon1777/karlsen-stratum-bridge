@@ -80,9 +80,9 @@ func ListenAndServe(cfg BridgeConfig) error {
 	}
 
 	shareHandler := newShareHandler(ksApi.karlsend)
-	minDiff := cfg.MinShareDiff
+	minDiff := float64(cfg.MinShareDiff)
 	if minDiff == 0 {
-		minDiff = 4
+		minDiff = 0.1
 	}
 	extranonceSize := cfg.ExtranonceSize
 	if extranonceSize > 3 {
