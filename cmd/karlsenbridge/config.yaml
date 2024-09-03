@@ -7,8 +7,8 @@ stratum_port: :5555
 # For a list of public nodes, run `nslookup mainnet-dnsseed.daglabs-dev.com`
 # uncomment for to use a public node
 # karlsend_address: 46.17.104.200:42110
-karlsend_address: localhost:42110
-#karlsend_address: localhost:42210
+#karlsend_address: localhost:42110
+karlsend_address: localhost:42210
 
 # min_share_diff: only accept shares of the specified difficulty (or higher)
 # from the miner(s).  Higher values will reduce the number of shares submitted,
@@ -22,7 +22,8 @@ karlsend_address: localhost:42110
 # don't want to change the default to match your device(s), the vardiff engine
 # will adjust to an appropriate diff for lower hashrate devices within a few
 # minutes.
-min_share_diff: 64
+# 0 = 0.1
+min_share_diff: 0
 
 # var_diff: if true, enables the auto-adjusting variable share diff mechanism.
 # Starts with the value defined by the 'min_share_diff' setting, then checks
@@ -42,14 +43,14 @@ var_diff: true
 #
 # Example values and their resulting confidence levels:
 # 20 => 99%, 15 => 95%, 12 => 90%
-shares_per_min: 15
+shares_per_min: 12
 
 # var_diff_stats: if true, print vardiff engine stats to the log every 10s
-var_diff_stats: false
+var_diff_stats: true
 
 # block_wait_time: time to wait since last new block message from karlsend before
 # manually requesting a new block. Examples are '500ms', '3s', '1m', etc.
-block_wait_time: 3s
+block_wait_time: 2s
 
 # extranonce_size: size in bytes of extranonce, from 0 (no extranonce) to 3.
 # With no extranonce (0), all clients will search through the same nonce-space,
@@ -73,4 +74,4 @@ log_to_file: true
 # you can get the raw metrics (along with default golang metrics) using
 # `curl http://localhost:{prom_port}/metrics`
 # Note `:PORT` format is needed if not specifiying a specific ip range
-prom_port: :2114
+#prom_port: :2114
