@@ -40,6 +40,7 @@ type WorkStats struct {
 
 type shareHandler struct {
 	karlsen      *rpcclient.RPCClient
+	soloDiff     float64
 	stats        map[string]*WorkStats
 	statsLock    sync.Mutex
 	overall      WorkStats
@@ -150,7 +151,11 @@ func (sh *shareHandler) checkStales(ctx *gostratum.StratumContext, si *submitInf
 	return nil
 }
 
-func (sh *shareHandler) HandleSubmit(ctx *gostratum.StratumContext, event gostratum.JsonRpcEvent) error {
+func (sh *shareHandler) setSoloDiff(diff float64) {
+	sh.soloDiff = diff
+}
+
+func (sh *shareHandler) HandleSubmit(ctx *gostratum.StratumContext, event gostratum.JsonRpcEvent, soloMining bool) error {
 	submitInfo, err := validateSubmit(ctx, event)
 	if err != nil {
 		return err
@@ -213,7 +218,11 @@ func (sh *shareHandler) HandleSubmit(ctx *gostratum.StratumContext, event gostra
 			return err
 		}
 	} else if powValue.Cmp(state.stratumDiff.targetValue) >= 0 {
-		ctx.Logger.Warn("weak block")
+		if soloMining {
+			ctx.Logger.Warn("weak block")
+		} else {
+			ctx.Logger.Warn("weak share")
+		}
 		RecordWeakShare(ctx)
 		return ctx.ReplyLowDiffShare(event.Id)
 	}
@@ -303,8 +312,10 @@ func (sh *shareHandler) startStatsThread() error {
 		rateStr := stringifyHashrate(totalRate)
 		ratioStr := fmt.Sprintf("%d/%d/%d", sh.overall.SharesFound.Load(), sh.overall.StaleShares.Load(), sh.overall.InvalidShares.Load())
 		str += "\n-------------------------------------------------------------------------------\n"
-		str += fmt.Sprintf("                | %14.14s | %14.14s | %12d | %11s",
+		str += fmt.Sprintf(" Total          | %14.14s | %14.14s | %12d | %11s",
 			rateStr, ratioStr, sh.overall.BlocksFound.Load(), time.Since(start).Round(time.Second))
+		str += "\n-------------------------------------------------------------------------------\n"
+		str += " Network Hashrate: " + stringifyHashrate(DiffToHash(sh.soloDiff))
 		str += "\n========================================================= kls_bridge_" + version + " ===\n"
 		// sh.statsLock.Unlock()
 		log.Println(str)

@@ -14,6 +14,9 @@ karlsend_address: localhost:42110
 # prefix handling for testnet addresses is applied
 testnet_mining: false
 
+# solo_mining: if true, network difficulty instead of stratum variable difficulty (vardiff)
+solo_mining: false
+
 # min_share_diff: only accept shares of the specified difficulty (or higher)
 # from the miner(s). Higher values will reduce the number of shares submitted,
 # thereby reducing network traffic and server load, while lower values will

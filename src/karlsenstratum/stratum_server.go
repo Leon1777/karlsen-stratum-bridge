@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-const version = "v2.1.0"
+const version = "v2.2.0"
 const minBlockWaitTime = 3 * time.Second
 
 type BridgeConfig struct {
@@ -23,6 +23,7 @@ type BridgeConfig struct {
 	PrintStats      bool          `yaml:"print_stats"`
 	UseLogFile      bool          `yaml:"log_to_file"`
 	HealthCheckPort string        `yaml:"health_check_port"`
+	SoloMining      bool          `yaml:"solo_mining"`
 	BlockWaitTime   time.Duration `yaml:"block_wait_time"`
 	MinShareDiff    uint          `yaml:"min_share_diff"`
 	VarDiff         bool          `yaml:"var_diff"`
@@ -94,7 +95,7 @@ func ListenAndServe(cfg BridgeConfig) error {
 	// override the submit handler with an actual useful handler
 	handlers[string(gostratum.StratumMethodSubmit)] =
 		func(ctx *gostratum.StratumContext, event gostratum.JsonRpcEvent) error {
-			if err := shareHandler.HandleSubmit(ctx, event); err != nil {
+			if err := shareHandler.HandleSubmit(ctx, event, cfg.SoloMining); err != nil {
 				ctx.Logger.Sugar().Error(err) // sink error
 			}
 			return nil
@@ -111,10 +112,10 @@ func ListenAndServe(cfg BridgeConfig) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	ksApi.Start(ctx, func() {
-		clientHandler.NewBlockAvailable(ksApi)
+		clientHandler.NewBlockAvailable(ksApi, cfg.SoloMining)
 	})
 
-	if cfg.VarDiff {
+	if cfg.VarDiff || cfg.SoloMining {
 		go shareHandler.startVardiffThread(cfg.SharesPerMin, cfg.VarDiffStats)
 	}
 
