@@ -34,7 +34,7 @@ Shares-based work allocation with miner-like periodic stat output:
  lemois         |       0.13GH/s |          3/0/0 |            0 |       6m48s
 -------------------------------------------------------------------------------
                 |       0.13GH/s |          3/0/0 |            0 |       7m20s
-========================================================= kls_bridge_v2.1.0 ===
+========================================================= kls_bridge_v2.2.0 ===
 ```
 
 ## Variable difficulty engine (vardiff)
