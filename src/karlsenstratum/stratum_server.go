@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-const version = "v2.2.0"
+const version = "v2.3.0"
 const minBlockWaitTime = 3 * time.Second
 
 type BridgeConfig struct {
