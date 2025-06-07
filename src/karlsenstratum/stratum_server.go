@@ -115,8 +115,13 @@ func ListenAndServe(cfg BridgeConfig) error {
 		clientHandler.NewBlockAvailable(ksApi, cfg.SoloMining)
 	})
 
-	if cfg.VarDiff || cfg.SoloMining {
+	if cfg.SoloMining {
+		logger.Info("Solo mining enabled: vardiff is disabled")
+	} else if cfg.VarDiff {
+		logger.Info("vardiff is enabled")
 		go shareHandler.startVardiffThread(cfg.SharesPerMin, cfg.VarDiffStats)
+	} else {
+		logger.Info("vardiff is disabled")
 	}
 
 	if cfg.PrintStats {
