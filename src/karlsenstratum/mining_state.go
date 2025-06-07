@@ -9,7 +9,7 @@ import (
 	"github.com/karlsen-network/karlsend/v2/app/appmessage"
 )
 
-const maxjobs = 32
+const maxjobs = 256
 
 type MiningState struct {
 	Jobs        map[int]*appmessage.RPCBlock
