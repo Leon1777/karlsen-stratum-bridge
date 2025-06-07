@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
+	"github.com/karlsen-network/karlsen-stratum-bridge/v2/src/utils"
 	"github.com/karlsen-network/karlsend/v2/util"
 	"github.com/mattn/go-colorable"
 	"github.com/pkg/errors"
@@ -25,7 +27,7 @@ func DefaultLogger() *zap.Logger {
 	cfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	return zap.New(zapcore.NewCore(
 		zapcore.NewConsoleEncoder(cfg),
-		zapcore.AddSync(colorable.NewColorableStdout()),
+		&utils.BufferedWriteSyncer{WS: zapcore.AddSync(colorable.NewColorableStdout()), FlushInterval: 5 * time.Second},
 		zapcore.DebugLevel,
 	))
 }
