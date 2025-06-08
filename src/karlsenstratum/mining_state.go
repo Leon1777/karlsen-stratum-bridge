@@ -35,9 +35,9 @@ func GetMiningState(ctx *gostratum.StratumContext) *MiningState {
 }
 
 func (ms *MiningState) AddJob(job *appmessage.RPCBlock) int {
+	ms.JobLock.Lock()
 	ms.jobCounter++
 	idx := ms.jobCounter
-	ms.JobLock.Lock()
 	ms.Jobs[idx%maxjobs] = job
 	ms.JobLock.Unlock()
 	return idx
