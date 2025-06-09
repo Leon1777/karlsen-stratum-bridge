@@ -194,22 +194,24 @@ func (sh *shareHandler) HandleSubmit(ctx *gostratum.StratumContext, event gostra
 		}
 	}
 	stats := sh.getCreateStats(ctx)
-	// if err := sh.checkStales(ctx, submitInfo); err != nil {
-	// 	if err == ErrDupeShare {
-	// 		ctx.Logger.Info("dupe share "+submitInfo.noncestr, ctx.WorkerName, ctx.WalletAddr)
-	// 		atomic.AddInt64(&stats.StaleShares, 1)
-	// 		RecordDupeShare(ctx)
-	// 		return ctx.ReplyDupeShare(event.Id)
-	// 	} else if errors.Is(err, ErrStaleShare) {
-	// 		ctx.Logger.Info(err.Error(), ctx.WorkerName, ctx.WalletAddr)
-	// 		atomic.AddInt64(&stats.StaleShares, 1)
-	// 		RecordStaleShare(ctx)
-	// 		return ctx.ReplyStaleShare(event.Id)
-	// 	}
-	// 	// unknown error somehow
-	// 	ctx.Logger.Error("unknown error during check stales: ", err.Error())
-	// 	return ctx.ReplyBadShare(event.Id)
-	// }
+	if err := sh.checkStales(ctx, submitInfo); err != nil {
+		if err == ErrDupeShare {
+			ctx.Logger.Warn("duplicate share: " + submitInfo.noncestr)
+			RecordDupeShare(ctx)
+			stats.InvalidShares.Add(1)
+			sh.overall.InvalidShares.Add(1)
+			return ctx.ReplyDupeShare(event.Id)
+		} else if errors.Is(err, ErrStaleShare) {
+			ctx.Logger.Warn("stale share")
+			stats.StaleShares.Add(1)
+			sh.overall.StaleShares.Add(1)
+			RecordStaleShare(ctx)
+			return ctx.ReplyStaleShare(event.Id)
+		}
+		// unknown error somehow
+		ctx.Logger.Error("unknown error during check stales")
+		return ctx.ReplyBadShare(event.Id)
+	}
 
 	converted, err := appmessage.RPCBlockToDomainBlock(submitInfo.block)
 	if err != nil {
@@ -221,6 +223,8 @@ func (sh *shareHandler) HandleSubmit(ctx *gostratum.StratumContext, event gostra
 	powValue := powState.CalculateProofOfWorkValue()
 
 	// The block hash must be less or equal than the claimed target.
+	//
+	// shares that don't meet the stratum difficulty
 	if powValue.Cmp(&powState.Target) <= 0 {
 		if err := sh.submit(ctx, converted, submitInfo.nonceVal, event.Id); err != nil {
 			return err
@@ -231,6 +235,11 @@ func (sh *shareHandler) HandleSubmit(ctx *gostratum.StratumContext, event gostra
 		} else {
 			ctx.Logger.Warn("weak share")
 		}
+		ctx.Logger.Warn(fmt.Sprintf("Net Target: %s\n", powState.Target.String()))
+		ctx.Logger.Warn(fmt.Sprintf("Stratum Target: %s\n", state.stratumDiff.targetValue.String()))
+		ctx.Logger.Warn(fmt.Sprintf("PowValue: %064x\n", powValue.Bytes()))
+		stats.InvalidShares.Add(1)
+		sh.overall.InvalidShares.Add(1)
 		RecordWeakShare(ctx)
 		return ctx.ReplyLowDiffShare(event.Id)
 	}
@@ -271,6 +280,7 @@ func (sh *shareHandler) submit(ctx *gostratum.StratumContext,
 			RecordStaleShare(ctx)
 			return ctx.ReplyStaleShare(eventId)
 		} else {
+			// blocks rejected by karlsend
 			ctx.Logger.Warn("block rejected, unknown issue (probably bad pow", zap.Error(err))
 			sh.getCreateStats(ctx).InvalidShares.Add(1)
 			sh.overall.InvalidShares.Add(1)
