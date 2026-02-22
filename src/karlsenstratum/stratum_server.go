@@ -93,7 +93,7 @@ func ListenAndServe(cfg BridgeConfig) error {
 	if extranonceSize > 3 {
 		extranonceSize = 3
 	}
-	clientHandler := newClientListener(logger, shareHandler, float64(minDiff), int8(extranonceSize))
+	clientHandler := newClientListener(logger, shareHandler, minDiff, int8(extranonceSize))
 	handlers := gostratum.DefaultHandlers()
 	// override the submit handler with an actual useful handler
 	handlers[string(gostratum.StratumMethodSubmit)] =
