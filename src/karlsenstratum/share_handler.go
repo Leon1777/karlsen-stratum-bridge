@@ -492,12 +492,11 @@ func (sh *shareHandler) startVardiffThread(expectedShareRate uint, logStats bool
 // client handler restarts it while sending diff on next block
 func updateVarDiff(stats *WorkStats, minDiff float64) float64 {
 	previousMinDiff := stats.MinDiff.Load()
-	newMinDiff := math.Max(0.125, minDiff)
-	if newMinDiff != previousMinDiff {
-		log.Printf("updating vardiff to %f for client %s", newMinDiff, stats.WorkerName)
+	if minDiff != previousMinDiff {
+		log.Printf("updating vardiff to %f for client %s", minDiff, stats.WorkerName)
 		stats.VarDiffStartTime = time.Time{}
 		stats.VarDiffWindow = 0
-		stats.MinDiff.Store(newMinDiff)
+		stats.MinDiff.Store(minDiff)
 	}
 	return previousMinDiff
 }
@@ -522,7 +521,7 @@ func (sh *shareHandler) getClientVardiff(ctx *gostratum.StratumContext) float64 
 
 func (sh *shareHandler) setClientVardiff(ctx *gostratum.StratumContext, minDiff float64) float64 {
 	stats := sh.getCreateStats(ctx)
-	previousMinDiff := updateVarDiff(stats, minDiff)
+	previousMinDiff := updateVarDiff(stats, math.Max(minDiff, 0.00001))
 	startVarDiff(stats)
 	return previousMinDiff
 }
