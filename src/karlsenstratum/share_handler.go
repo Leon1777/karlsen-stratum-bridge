@@ -491,16 +491,14 @@ func (sh *shareHandler) startVardiffThread(expectedShareRate uint, logStats bool
 // update vardiff with new mindiff, reset counters, and disable tracker until
 // client handler restarts it while sending diff on next block
 func updateVarDiff(stats *WorkStats, minDiff float64) float64 {
-	stats.VarDiffStartTime = time.Time{}
-	stats.VarDiffWindow = 0
 	previousMinDiff := stats.MinDiff.Load()
-	newMinDiff := math.Max(0.1, minDiff)
-
+	newMinDiff := math.Max(0.125, minDiff)
 	if newMinDiff != previousMinDiff {
 		log.Printf("updating vardiff to %f for client %s", newMinDiff, stats.WorkerName)
+		stats.VarDiffStartTime = time.Time{}
+		stats.VarDiffWindow = 0
+		stats.MinDiff.Store(newMinDiff)
 	}
-
-	stats.MinDiff.Store(newMinDiff)
 	return previousMinDiff
 }
 

@@ -26,7 +26,7 @@ type BridgeConfig struct {
 	HealthCheckPort string        `yaml:"health_check_port"`
 	SoloMining      bool          `yaml:"solo_mining"`
 	BlockWaitTime   time.Duration `yaml:"block_wait_time"`
-	MinShareDiff    uint          `yaml:"min_share_diff"`
+	MinShareDiff    float64       `yaml:"min_share_diff"`
 	VarDiff         bool          `yaml:"var_diff"`
 	SharesPerMin    uint          `yaml:"shares_per_min"`
 	VarDiffStats    bool          `yaml:"var_diff_stats"`
@@ -87,7 +87,7 @@ func ListenAndServe(cfg BridgeConfig) error {
 	shareHandler := newShareHandler(ksApi.karlsend)
 	minDiff := float64(cfg.MinShareDiff)
 	if minDiff == 0 {
-		minDiff = 0.1
+		minDiff = 1
 	}
 	extranonceSize := cfg.ExtranonceSize
 	if extranonceSize > 3 {
